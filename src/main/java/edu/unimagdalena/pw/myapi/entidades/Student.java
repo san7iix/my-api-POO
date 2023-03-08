@@ -26,7 +26,7 @@ public class Student {
     @Column (nullable = false)
     private String lastName;
     @Column (nullable = false)
-    private String firtName;
+    private String firstName;
     @Column (nullable = false, unique=true)
     private String codigo;
     @Column
