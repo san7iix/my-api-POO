@@ -33,5 +33,12 @@ public class Teacher {
     @OneToMany(mappedBy="profe")
     private Set<Course> courses;
 
+    public Teacher updateWith(Teacher teacher){
+        return new Teacher(this.id,
+                            teacher.firstName,
+                            teacher.lastName,
+                            teacher.codigo, 
+                            null);
+    }   
 
 }
