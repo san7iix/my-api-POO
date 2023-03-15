@@ -8,6 +8,8 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,6 +32,7 @@ public class Teacher {
     private String lastName;
     @Column(unique = true)
     private String codigo;
+    @JsonIgnore
     @OneToMany(mappedBy="profe")
     private Set<Course> courses;
 
