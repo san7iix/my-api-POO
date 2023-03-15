@@ -2,19 +2,21 @@ package edu.unimagdalena.pw.myapi.services;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import edu.unimagdalena.pw.myapi.entidades.Course;
 import edu.unimagdalena.pw.myapi.entidades.Student;
 import edu.unimagdalena.pw.myapi.entidades.Teacher;
 import edu.unimagdalena.pw.myapi.repositories.CourseRepository;
 import edu.unimagdalena.pw.myapi.repositories.StudentRepository;
-
+@Service
 public class CourseServiceImpl implements CourseService{
     private final CourseRepository courseRepository;
     private final StudentRepository studentRepository;
 
-
+    @Autowired
     public CourseServiceImpl(CourseRepository courseRepository, StudentRepository studentRepository) {
         this.courseRepository = courseRepository;
         this.studentRepository = studentRepository;
