@@ -12,52 +12,73 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import edu.unimagdalena.pw.myapi.services.TeacherService;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.net.URI;
 
+import edu.unimagdalena.pw.myapi.api.dto.TeacherCreationDto;
+import edu.unimagdalena.pw.myapi.api.dto.TeacherDto;
+import edu.unimagdalena.pw.myapi.api.dto.TeacherMapper;
 import edu.unimagdalena.pw.myapi.entidades.Teacher;
 @RestController
 @RequestMapping("/api/v1")
 public class TeacherController {
     private final TeacherService teacherService;
-
-    public TeacherController(TeacherService teacherService) {
-        this.teacherService = teacherService;
-    }
+    private final TeacherMapper teacherMapper;
     
+    
+    public TeacherController(TeacherService teacherService, TeacherMapper teacherMapper) {
+        this.teacherService = teacherService;
+        this.teacherMapper = teacherMapper;
+    }
     @GetMapping("/teachers")
-    public ResponseEntity<List<Teacher>> findAll(){
+    public ResponseEntity<List<TeacherCreationDto>> findAll(){
         List<Teacher> teachers = teacherService.findAll();
-        return ResponseEntity.ok().body(teachers);
+        List<TeacherCreationDto> teacherCreationDtos = teachers.stream()
+                                                        .map(t -> teacherMapper.toTeacherCreationDto(t))
+                                                        .collect(Collectors.toList());
+                                                        
+        return ResponseEntity.ok().body(teacherCreationDtos);
     }
     @GetMapping("/teachers/{id}")
-    public ResponseEntity<Teacher> find(@PathVariable("id") Long id){
-        Optional<Teacher> teacher = teacherService.find(id);
+    public ResponseEntity<TeacherCreationDto> find(@PathVariable("id") Long id){
+        Optional<TeacherCreationDto> teacher = teacherService.find(id).map(t -> teacherMapper.toTeacherCreationDto(t));
         return ResponseEntity.of(teacher);
     }
 
     @PostMapping("/teachers")
-    public ResponseEntity<Teacher> create(@RequestBody Teacher teacher){
-        Teacher teacherCreated = teacherService.create(teacher);
+    public ResponseEntity<TeacherCreationDto> create(@RequestBody TeacherDto teacher){
+        
+        Teacher newTeacher = teacherMapper.toEntity(teacher);
+
+        Teacher teacherCreated = teacherService.create(newTeacher);
+
+        TeacherCreationDto teacherCreationDto = teacherMapper.toTeacherCreationDto(teacherCreated);
+
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                         .path("/{id}")
-                        .buildAndExpand(teacherCreated.getId())
+                        .buildAndExpand(teacherCreationDto.getId())
                         .toUri();
-        return ResponseEntity.created(location).body(teacherCreated);
+
+        return ResponseEntity.created(location).body(teacherCreationDto);
     }
 
     @PutMapping("/teachers/{id}")
-    public ResponseEntity<Teacher> update(@PathVariable("id") Long id, 
-                                        @RequestBody Teacher teacher
+    public ResponseEntity<TeacherCreationDto> update(@PathVariable("id") Long id, 
+                                        @RequestBody TeacherCreationDto teacher
                                         ){
-        return teacherService.update(id, teacher)
-            .map(teacherUpdated -> ResponseEntity.ok().body(teacherUpdated))
+
+        Teacher teacherToUpdate = teacherMapper.toTeacherEntity(teacher) ;
+
+        return teacherService.update(id, teacherToUpdate)        
+            .map(teacherUpdated -> ResponseEntity.ok().body(teacherMapper.toTeacherCreationDto(teacherToUpdate)))
             .orElseGet(()->{
-                Teacher teacherCreated = teacherService.create(teacher);
+                Teacher teacherCreated = teacherService.create(teacherToUpdate);
+                TeacherCreationDto teacherCreationDto = teacherMapper.toTeacherCreationDto(teacherToUpdate);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                         .path("/{id}")
-                        .buildAndExpand(teacherCreated.getId())
+                        .buildAndExpand(teacherCreationDto.getId())
                         .toUri();
-        return ResponseEntity.created(location).body(teacherCreated);
+        return ResponseEntity.created(location).body(teacherCreationDto);
             });
     }
 }
