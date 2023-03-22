@@ -1,5 +1,6 @@
 package edu.unimagdalena.pw.myapi.api;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,6 +20,8 @@ import edu.unimagdalena.pw.myapi.api.dto.TeacherCreationDto;
 import edu.unimagdalena.pw.myapi.api.dto.TeacherDto;
 import edu.unimagdalena.pw.myapi.api.dto.TeacherMapper;
 import edu.unimagdalena.pw.myapi.entidades.Teacher;
+import edu.unimagdalena.pw.myapi.exceptions.DuplicateCodigoException;
+import edu.unimagdalena.pw.myapi.exceptions.TeacherNotFoundException;
 @RestController
 @RequestMapping("/api/v1")
 public class TeacherController {
@@ -41,17 +44,24 @@ public class TeacherController {
     }
     @GetMapping("/teachers/{id}")
     public ResponseEntity<TeacherCreationDto> find(@PathVariable("id") Long id){
-        Optional<TeacherCreationDto> teacher = teacherService.find(id).map(t -> teacherMapper.toTeacherCreationDto(t));
-        return ResponseEntity.of(teacher);
+        TeacherCreationDto teacher = teacherService.find(id)
+                    .map(t -> teacherMapper.toTeacherCreationDto(t))
+                    .orElseThrow(TeacherNotFoundException::new);
+
+        return ResponseEntity.status(HttpStatus.FOUND).body(teacher);
     }
 
     @PostMapping("/teachers")
     public ResponseEntity<TeacherCreationDto> create(@RequestBody TeacherDto teacher){
         
         Teacher newTeacher = teacherMapper.toEntity(teacher);
-
-        Teacher teacherCreated = teacherService.create(newTeacher);
-
+        Teacher teacherCreated = null;
+        try {
+            teacherCreated = teacherService.create(newTeacher);
+        } catch (Exception e) {
+            throw new DuplicateCodigoException();
+        }
+        
         TeacherCreationDto teacherCreationDto = teacherMapper.toTeacherCreationDto(teacherCreated);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
