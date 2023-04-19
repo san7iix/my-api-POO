@@ -2,6 +2,7 @@ package edu.unimagdalena.pw.myapi.api;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,6 +35,7 @@ public class TeacherController {
         this.teacherMapper = teacherMapper;
     }
     @GetMapping("/teachers")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<List<TeacherCreationDto>> findAll(){
         List<Teacher> teachers = teacherService.findAll();
         List<TeacherCreationDto> teacherCreationDtos = teachers.stream()
@@ -43,6 +45,7 @@ public class TeacherController {
         return ResponseEntity.ok().body(teacherCreationDtos);
     }
     @GetMapping("/teachers/{id}")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<TeacherCreationDto> find(@PathVariable("id") Long id){
         TeacherCreationDto teacher = teacherService.find(id)
                     .map(t -> teacherMapper.toTeacherCreationDto(t))
@@ -52,6 +55,7 @@ public class TeacherController {
     }
 
     @PostMapping("/teachers")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<TeacherCreationDto> create(@RequestBody TeacherDto teacher){
         
         Teacher newTeacher = teacherMapper.toEntity(teacher);
@@ -73,6 +77,7 @@ public class TeacherController {
     }
 
     @PutMapping("/teachers/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<TeacherCreationDto> update(@PathVariable("id") Long id, 
                                         @RequestBody TeacherCreationDto teacher
                                         ){
