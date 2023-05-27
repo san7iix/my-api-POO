@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import edu.unimagdalena.pw.myapi.services.TeacherService;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.net.URI;
 
@@ -39,7 +38,7 @@ public class TeacherController {
     public ResponseEntity<List<TeacherCreationDto>> findAll(){
         List<Teacher> teachers = teacherService.findAll();
         List<TeacherCreationDto> teacherCreationDtos = teachers.stream()
-                                                        .map(t -> teacherMapper.toTeacherCreationDto(t))
+                                                        .map(teacherMapper::toTeacherCreationDto)
                                                         .collect(Collectors.toList());
                                                         
         return ResponseEntity.ok().body(teacherCreationDtos);
@@ -48,7 +47,7 @@ public class TeacherController {
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<TeacherCreationDto> find(@PathVariable("id") Long id){
         TeacherCreationDto teacher = teacherService.find(id)
-                    .map(t -> teacherMapper.toTeacherCreationDto(t))
+                    .map(teacherMapper::toTeacherCreationDto)
                     .orElseThrow(TeacherNotFoundException::new);
 
         return ResponseEntity.status(HttpStatus.FOUND).body(teacher);
